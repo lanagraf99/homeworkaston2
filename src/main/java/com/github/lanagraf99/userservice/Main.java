@@ -86,13 +86,13 @@ public class Main {
     }
 
     public static User createUser(Scanner scanner) {
-        System.out.println("Введите имя: ");
+        System.out.print("Введите имя: ");
         String name = scanner.nextLine();
 
-        System.out.println("Введите email: ");
+        System.out.print("Введите email: ");
         String email = scanner.nextLine();
 
-        System.out.println("Введите возраст: ");
+        System.out.print("Введите возраст: ");
         int age = scanner.nextInt();
         scanner.nextLine();
 
