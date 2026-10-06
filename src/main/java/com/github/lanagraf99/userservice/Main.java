@@ -12,7 +12,7 @@ import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        UserDao userDao = new UserDaoImpl();
+        UserDao userDao = new UserDaoImpl(HibernateUtil.getSessionFactory());
         Scanner scanner = new Scanner(System.in);
 
         while (true) {
