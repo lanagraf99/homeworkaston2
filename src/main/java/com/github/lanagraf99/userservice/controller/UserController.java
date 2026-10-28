@@ -6,6 +6,9 @@ import com.github.lanagraf99.userservice.dto.UserResponseDto;
 import com.github.lanagraf99.userservice.model.User;
 import com.github.lanagraf99.userservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,16 +25,30 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public UserResponseDto getUser(@PathVariable Long id) {
+    public EntityModel<UserResponseDto> getUser(@PathVariable Long id) {
         User user = userService.getUser(id);
-        return UserMapper.toResponseDto(user);
+        UserResponseDto dto = UserMapper.toResponseDto(user);
+
+        EntityModel<UserResponseDto> model = EntityModel.of(dto);
+        model.add(Link.of("http://localhost:8080/api/users/" + id).withSelfRel());
+        model.add(Link.of("http://localhost:8080/api/users").withRel("all-users"));
+        return model;
     }
 
     @GetMapping
-    public List<UserResponseDto> getAllUsers() {
-        return userService.getAllUsers().stream()
-                .map(UserMapper::toResponseDto)
+    public CollectionModel<EntityModel<UserResponseDto>> getAllUsers() {
+        List<EntityModel<UserResponseDto>> users = userService.getAllUsers().stream()
+                .map(user -> {
+                    UserResponseDto dto = UserMapper.toResponseDto(user);
+                    EntityModel<UserResponseDto> model = EntityModel.of(dto);
+                    model.add(Link.of("http://localhost:8080/api/users/" + user.getId()).withSelfRel());
+                    return model;
+                })
                 .toList();
+
+        CollectionModel<EntityModel<UserResponseDto>> collection = CollectionModel.of(users);
+        collection.add(Link.of("http://localhost:8080/api/users").withSelfRel());
+        return collection;
     }
 
     @PostMapping
