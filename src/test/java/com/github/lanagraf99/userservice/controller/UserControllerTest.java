@@ -1,7 +1,9 @@
 package com.github.lanagraf99.userservice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.lanagraf99.userservice.dto.UserEvent;
 import com.github.lanagraf99.userservice.dto.UserRequestDto;
+import com.github.lanagraf99.userservice.kafka.UserEventProducer;
 import com.github.lanagraf99.userservice.model.User;
 import com.github.lanagraf99.userservice.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -16,6 +19,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -38,6 +43,9 @@ class UserControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @MockBean
+    private UserEventProducer userEventProducer;
+
     @BeforeEach
     void cleanDatabase() {
         userRepository.deleteAll();
@@ -56,6 +64,8 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Лупа"))
                 .andExpect(jsonPath("$.email").value("lupa@mail.ru"));
+
+        verify(userEventProducer).sendUserEvent(any(UserEvent.class));
     }
 
     @Test
